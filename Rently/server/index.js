@@ -1,33 +1,20 @@
 const express = require("express");
 const app = express();
-const passport = require("passport");
-const GoogleStrategy = require("passport-google-oauth20").Strategy;
+const mongoose = require("mongoose");
+const authRoutes = require("./routes/authRoutes");
 const keys = require("./config/keys");
+require("./models/User");
+require("./services/passport");
 
 const PORT = process.env.PORT || 8080;
 
-passport.use(
-  new GoogleStrategy(
-    {
-      clientID: keys.googleClientID,
-      clientSecret: keys.googleClientSecret,
-      callbackURL: "/auth/google/callback",
-    },
-    (accessToken) => {
-      console.log(accessToken);
-    }
-  )
-);
+authRoutes(app);
 
-app.get(
-  "/auth/google",
-  passport.authenticate("google", {
-    scope: ["profile", "email"],
-  })
-);
-app.get('/auth/google/callback', passport.authenticate('google'), (req, res) => {
-  res.redirect('/')
-})
+mongoose.connect(keys.mongoURI, {
+  useNewUrlParser: true,
+  useUnifiedTopology: true,
+});
+
 
 app.listen(PORT, () => {
   console.log("Server is running on port 8080");
